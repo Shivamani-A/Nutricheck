@@ -1,0 +1,36 @@
+{#<!DOCTYPE html>#}
+{#<html lang="en">#}
+{#<head>#}
+{#    <meta charset="UTF-8">#}
+{#    <title>Result</title>#}
+{#</head>#}
+{#<body>#}
+{#<h2>Processed Data</h2>#}
+{#    {{ table|safe }}#}
+{#</body>#}
+{#</html>#}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Processed Data Results</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Processed Data Results</h1>
+
+        <!-- Display the table -->
+        <div>
+            {{ table|safe }}
+        </div>
+
+        <!-- Download buttons -->
+        <div class="mt-3">
+            <a href="{% url 'download_csv' %}" class="btn btn-primary">Download CSV</a>
+            <a href="{% url 'download_pdf' %}" class="btn btn-danger">Download PDF</a>
+            <!-- You can add Excel or other formats if needed -->
+        </div>
+    </div>
+</body>
+</html>

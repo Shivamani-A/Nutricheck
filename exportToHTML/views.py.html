@@ -1,0 +1,237 @@
+<html>
+<head>
+<title>views.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #7a7e85;}
+.s4 { color: #6aab73;}
+.s5 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+views.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">io</span>
+<span class="s0">import </span><span class="s1">re</span>
+<span class="s0">import </span><span class="s1">pandas </span><span class="s0">as </span><span class="s1">pd</span>
+<span class="s0">from </span><span class="s1">django</span><span class="s2">.</span><span class="s1">http </span><span class="s0">import </span><span class="s1">HttpResponse</span>
+<span class="s0">from </span><span class="s1">django</span><span class="s2">.</span><span class="s1">shortcuts </span><span class="s0">import </span><span class="s1">render</span>
+<span class="s0">from </span><span class="s1">io </span><span class="s0">import </span><span class="s1">StringIO</span><span class="s2">, </span><span class="s1">BytesIO</span>
+
+<span class="s0">from </span><span class="s1">reportlab</span><span class="s2">.</span><span class="s1">lib</span><span class="s2">.</span><span class="s1">pagesizes </span><span class="s0">import </span><span class="s1">letter</span>
+<span class="s0">from </span><span class="s1">reportlab</span><span class="s2">.</span><span class="s1">pdfgen </span><span class="s0">import </span><span class="s1">canvas</span>
+
+<span class="s0">from </span><span class="s2">.</span><span class="s1">forms </span><span class="s0">import </span><span class="s1">ExcelUploadForm</span>
+<span class="s0">from </span><span class="s2">.</span><span class="s1">models </span><span class="s0">import </span><span class="s1">ProteinData</span>
+
+<span class="s3"># Create your views here.</span>
+
+<span class="s3"># Define the RACC values as a dictionary</span>
+<span class="s1">RACC_VALUES </span><span class="s2">= {</span>
+    <span class="s4">'bean'</span><span class="s2">: </span><span class="s5">35</span><span class="s2">,</span>
+    <span class="s4">'chickpea'</span><span class="s2">: </span><span class="s5">35</span><span class="s2">,</span>
+    <span class="s4">'lentil'</span><span class="s2">: </span><span class="s5">35</span><span class="s2">,</span>
+    <span class="s4">'pea'</span><span class="s2">: </span><span class="s5">35</span><span class="s2">,</span>
+    <span class="s4">'hemp'</span><span class="s2">: </span><span class="s5">15</span><span class="s2">,</span>
+    <span class="s4">'oats'</span><span class="s2">: </span><span class="s5">40</span><span class="s2">,</span>
+    <span class="s4">'wheat'</span><span class="s2">: </span><span class="s5">40</span><span class="s2">,</span>
+    <span class="s4">'soy'</span><span class="s2">: </span><span class="s5">35</span><span class="s2">,</span>
+    <span class="s4">'buckwheat'</span><span class="s2">: </span><span class="s5">30</span><span class="s2">,</span>
+    <span class="s4">'pinto'</span><span class="s2">: </span><span class="s5">15</span>
+<span class="s2">}</span>
+
+
+<span class="s0">def </span><span class="s1">label_source</span><span class="s2">(</span><span class="s1">value</span><span class="s2">):</span>
+    <span class="s3"># if pd.isna(value):  # Check if the value is NaN</span>
+    <span class="s3">#     return 'Unknown'</span>
+    <span class="s0">if </span><span class="s1">value </span><span class="s2">&gt; </span><span class="s5">10</span><span class="s2">:</span>
+        <span class="s0">return </span><span class="s4">'Excellent Source'</span>
+    <span class="s0">elif </span><span class="s5">5 </span><span class="s2">&lt;= </span><span class="s1">value </span><span class="s2">&lt;= </span><span class="s5">10</span><span class="s2">:</span>
+        <span class="s0">return </span><span class="s4">'Good Source'</span>
+    <span class="s0">else</span><span class="s2">:</span>
+        <span class="s0">return </span><span class="s4">'No Claim'</span>
+
+<span class="s3"># Function to extract keywords from the sample column and find the corresponding RACC value</span>
+<span class="s0">def </span><span class="s1">extract_keyword</span><span class="s2">(</span><span class="s1">product_name</span><span class="s2">):</span>
+    <span class="s1">product_name </span><span class="s2">= </span><span class="s1">product_name</span><span class="s2">.</span><span class="s1">lower</span><span class="s2">()  </span><span class="s3"># Convert to lowercase for matching</span>
+    <span class="s0">for </span><span class="s1">keyword </span><span class="s0">in </span><span class="s1">RACC_VALUES</span><span class="s2">:</span>
+        <span class="s3"># Use regular expressions to find the keyword in the product name</span>
+        <span class="s0">if </span><span class="s1">re</span><span class="s2">.</span><span class="s1">search</span><span class="s2">(</span><span class="s4">r'\b' </span><span class="s2">+ </span><span class="s1">keyword </span><span class="s2">+ </span><span class="s4">r'\b'</span><span class="s2">, </span><span class="s1">product_name</span><span class="s2">):</span>
+            <span class="s0">return </span><span class="s1">keyword  </span><span class="s3"># Return the matched keyword if found</span>
+    <span class="s0">return None  </span><span class="s3"># Return None if no keyword matches</span>
+
+
+<span class="s0">def </span><span class="s1">process_excel</span><span class="s2">(</span><span class="s1">request</span><span class="s2">):</span>
+    <span class="s0">if </span><span class="s1">request</span><span class="s2">.</span><span class="s1">method </span><span class="s2">== </span><span class="s4">'POST'</span><span class="s2">:</span>
+        <span class="s1">form </span><span class="s2">= </span><span class="s1">ExcelUploadForm</span><span class="s2">(</span><span class="s1">request</span><span class="s2">.</span><span class="s1">POST</span><span class="s2">, </span><span class="s1">request</span><span class="s2">.</span><span class="s1">FILES</span><span class="s2">)</span>
+        <span class="s0">if </span><span class="s1">form</span><span class="s2">.</span><span class="s1">is_valid</span><span class="s2">():</span>
+            <span class="s1">excel_file </span><span class="s2">= </span><span class="s1">request</span><span class="s2">.</span><span class="s1">FILES</span><span class="s2">[</span><span class="s4">'file'</span><span class="s2">]</span>
+            <span class="s3"># Read the Excel file into a pandas DataFrame</span>
+            <span class="s1">df </span><span class="s2">= </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">read_excel</span><span class="s2">(</span><span class="s1">excel_file</span><span class="s2">)</span>
+            <span class="s3"># Clear old entries from ProteinData table</span>
+            <span class="s1">ProteinData</span><span class="s2">.</span><span class="s1">objects</span><span class="s2">.</span><span class="s1">all</span><span class="s2">().</span><span class="s1">delete</span><span class="s2">()</span>
+
+            <span class="s3"># Ensure the 'sample' column is in lowercase and has no leading/trailing spaces</span>
+            <span class="s1">df</span><span class="s2">[</span><span class="s4">'SAMPLE'</span><span class="s2">] = </span><span class="s1">df</span><span class="s2">[</span><span class="s4">'SAMPLE'</span><span class="s2">].</span><span class="s1">str</span><span class="s2">.</span><span class="s1">lower</span><span class="s2">().</span><span class="s1">str</span><span class="s2">.</span><span class="s1">strip</span><span class="s2">()</span>
+
+            <span class="s3"># Convert relevant columns to numeric, setting errors='coerce' to handle non-numeric data</span>
+            <span class="s3"># df['PROTEIN %'] = pd.to_numeric(df['PROTEIN %'], errors='coerce')</span>
+            <span class="s3"># df['PDCAAS'] = pd.to_numeric(df['PDCAAS'], errors='coerce')</span>
+            <span class="s3"># df['IVPDCAAS'] = pd.to_numeric(df['IVPDCAAS'], errors='coerce')</span>
+
+            <span class="s3"># Apply calculations row by row</span>
+            <span class="s0">def </span><span class="s1">calculate_labels</span><span class="s2">(</span><span class="s1">row</span><span class="s2">):</span>
+                <span class="s1">product </span><span class="s2">= </span><span class="s1">extract_keyword</span><span class="s2">(</span><span class="s1">row</span><span class="s2">[</span><span class="s4">'SAMPLE'</span><span class="s2">])</span>
+                <span class="s1">protein_percent </span><span class="s2">= </span><span class="s1">row</span><span class="s2">[</span><span class="s4">'PROTEIN %'</span><span class="s2">]</span>
+                <span class="s1">pdcaas </span><span class="s2">= </span><span class="s1">row</span><span class="s2">[</span><span class="s4">'PDCAAS'</span><span class="s2">] </span><span class="s3"># Fetching Value of PDCAAS from file uploaded</span>
+                <span class="s1">ivpdcaas </span><span class="s2">= </span><span class="s1">row</span><span class="s2">[</span><span class="s4">'IVPDCAAS'</span><span class="s2">]  </span><span class="s3"># Fetching Value of IVPDCAAS from file uploaded</span>
+
+                <span class="s3"># Check if a keyword was found and is in the predefined list</span>
+                <span class="s3"># if pd.notnull(protein_percent) and pd.notnull(pdcaas) and pd.notnull(ivpdcaas) and product:</span>
+                <span class="s0">if </span><span class="s1">product</span><span class="s2">:</span>
+                    <span class="s1">racc_value </span><span class="s2">= </span><span class="s1">RACC_VALUES</span><span class="s2">[</span><span class="s1">product</span><span class="s2">]</span>
+                    <span class="s3"># PDCAAS Calculation</span>
+                    <span class="s1">pdcaas_result </span><span class="s2">= (</span><span class="s1">protein_percent</span><span class="s2">/</span><span class="s5">100</span><span class="s2">) * </span><span class="s1">racc_value </span><span class="s2">* (</span><span class="s1">pdcaas</span><span class="s2">/</span><span class="s5">100</span><span class="s2">)</span>
+                    <span class="s1">pdcaas_result </span><span class="s2">= </span><span class="s1">round</span><span class="s2">(</span><span class="s1">pdcaas_result</span><span class="s2">, </span><span class="s5">2</span><span class="s2">)  </span><span class="s3"># Restrict to 2 decimal places</span>
+                    <span class="s1">pdcaas_label </span><span class="s2">= </span><span class="s1">label_source</span><span class="s2">(</span><span class="s1">pdcaas_result</span><span class="s2">)</span>
+
+                    <span class="s3"># IVPDCAAS Calculation</span>
+                    <span class="s1">ivpdcaas_result </span><span class="s2">= (</span><span class="s1">protein_percent</span><span class="s2">/</span><span class="s5">100</span><span class="s2">) * </span><span class="s1">racc_value </span><span class="s2">* (</span><span class="s1">ivpdcaas</span><span class="s2">/</span><span class="s5">100</span><span class="s2">)</span>
+                    <span class="s1">ivpdcaas_result </span><span class="s2">= </span><span class="s1">round</span><span class="s2">(</span><span class="s1">ivpdcaas_result</span><span class="s2">, </span><span class="s5">2</span><span class="s2">)  </span><span class="s3"># Restrict to 2 decimal places</span>
+                    <span class="s1">ivpdcaas_label </span><span class="s2">= </span><span class="s1">label_source</span><span class="s2">(</span><span class="s1">ivpdcaas_result</span><span class="s2">)</span>
+
+                    <span class="s0">return </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">Series</span><span class="s2">({</span><span class="s4">'PDCAAS claim'</span><span class="s2">: </span><span class="s1">pdcaas_result</span><span class="s2">, </span><span class="s4">' PDCAAS label'</span><span class="s2">: </span><span class="s1">pdcaas_label</span><span class="s2">, </span><span class="s4">'IVPDCAAS claim'</span><span class="s2">: </span><span class="s1">ivpdcaas_result</span><span class="s2">,</span><span class="s4">'IVPDCAAS label'</span><span class="s2">: </span><span class="s1">ivpdcaas_label</span><span class="s2">})</span>
+                <span class="s0">else</span><span class="s2">:</span>
+                    <span class="s0">return </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">Series</span><span class="s2">({</span><span class="s4">'PDCAAS claim'</span><span class="s2">: </span><span class="s4">'Unknown'</span><span class="s2">, </span><span class="s4">'label'</span><span class="s2">: </span><span class="s4">'Unknown' </span><span class="s2">, </span><span class="s4">'IVPDCAAS claim'</span><span class="s2">: </span><span class="s4">'Unknown'</span><span class="s2">,</span><span class="s4">'IVPDCAAS label'</span><span class="s2">: </span><span class="s4">'Unknown'</span><span class="s2">})  </span><span class="s3"># If no valid keyword is found</span>
+
+            <span class="s3"># Apply the calculation to each row and create the two new columns</span>
+            <span class="s1">df</span><span class="s2">[[</span><span class="s4">'PDCAAS claim'</span><span class="s2">, </span><span class="s4">'PDCAAS label'</span><span class="s2">, </span><span class="s4">'IVPDCAAS claim'</span><span class="s2">, </span><span class="s4">'IVPDCAAS label'</span><span class="s2">]] = </span><span class="s1">df</span><span class="s2">.</span><span class="s1">apply</span><span class="s2">(</span><span class="s1">calculate_labels</span><span class="s2">, </span><span class="s1">axis</span><span class="s2">=</span><span class="s5">1</span><span class="s2">)</span>
+
+
+            <span class="s3"># Convert the DataFrame to an HTML table to render in the template</span>
+            <span class="s1">table </span><span class="s2">= </span><span class="s1">df</span><span class="s2">.</span><span class="s1">to_html</span><span class="s2">(</span><span class="s1">classes</span><span class="s2">=</span><span class="s4">'table table-striped'</span><span class="s2">)</span>
+
+            <span class="s3"># Check if the user requested to download as CSV or Excel</span>
+            <span class="s0">if </span><span class="s4">'export_csv' </span><span class="s0">in </span><span class="s1">request</span><span class="s2">.</span><span class="s1">POST</span><span class="s2">:</span>
+                <span class="s0">return </span><span class="s1">download_csv</span><span class="s2">(</span><span class="s1">df</span><span class="s2">)</span>
+            <span class="s0">elif </span><span class="s4">'export_excel' </span><span class="s0">in </span><span class="s1">request</span><span class="s2">.</span><span class="s1">POST</span><span class="s2">:</span>
+                <span class="s0">return </span><span class="s1">export_pdf_file</span><span class="s2">(</span><span class="s1">df</span><span class="s2">)</span>
+
+            <span class="s0">return </span><span class="s1">render</span><span class="s2">(</span><span class="s1">request</span><span class="s2">, </span><span class="s4">'result.html'</span><span class="s2">, {</span><span class="s4">'table'</span><span class="s2">: </span><span class="s1">table</span><span class="s2">})</span>
+
+    <span class="s0">else</span><span class="s2">:</span>
+        <span class="s1">form </span><span class="s2">= </span><span class="s1">ExcelUploadForm</span><span class="s2">()</span>
+
+    <span class="s0">return </span><span class="s1">render</span><span class="s2">(</span><span class="s1">request</span><span class="s2">, </span><span class="s4">'upload.html'</span><span class="s2">, {</span><span class="s4">'form'</span><span class="s2">: </span><span class="s1">form</span><span class="s2">})</span>
+
+
+
+
+<span class="s3"># CSV download function</span>
+
+
+<span class="s0">def </span><span class="s1">download_csv</span><span class="s2">(</span><span class="s1">request</span><span class="s2">):</span>
+    <span class="s3"># Get processed data from session</span>
+    <span class="s1">df_dict </span><span class="s2">= </span><span class="s1">request</span><span class="s2">.</span><span class="s1">session</span><span class="s2">.</span><span class="s1">get</span><span class="s2">(</span><span class="s4">'processed_data'</span><span class="s2">, </span><span class="s0">None</span><span class="s2">)</span>
+    <span class="s0">if </span><span class="s1">df_dict </span><span class="s0">is not None</span><span class="s2">:</span>
+        <span class="s1">df </span><span class="s2">= </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">DataFrame</span><span class="s2">.</span><span class="s1">from_dict</span><span class="s2">(</span><span class="s1">df_dict</span><span class="s2">)</span>
+
+        <span class="s3"># Create a StringIO buffer to write CSV data into it</span>
+        <span class="s1">csv_buffer </span><span class="s2">= </span><span class="s1">StringIO</span><span class="s2">()</span>
+
+        <span class="s3"># Convert DataFrame to CSV and write it to the StringIO buffer</span>
+        <span class="s1">df</span><span class="s2">.</span><span class="s1">to_csv</span><span class="s2">(</span><span class="s1">path_or_buf</span><span class="s2">=</span><span class="s1">csv_buffer</span><span class="s2">, </span><span class="s1">index</span><span class="s2">=</span><span class="s0">False</span><span class="s2">)</span>
+
+        <span class="s3"># Get the content of the buffer as a string</span>
+        <span class="s1">csv_data </span><span class="s2">= </span><span class="s1">csv_buffer</span><span class="s2">.</span><span class="s1">getvalue</span><span class="s2">()</span>
+
+        <span class="s3"># Create HttpResponse for CSV</span>
+        <span class="s1">response </span><span class="s2">= </span><span class="s1">HttpResponse</span><span class="s2">(</span><span class="s1">content_type</span><span class="s2">=</span><span class="s4">'text/csv'</span><span class="s2">)</span>
+        <span class="s1">response</span><span class="s2">[</span><span class="s4">'Content-Disposition'</span><span class="s2">] = </span><span class="s4">'attachment; filename=&quot;output.csv&quot;'</span>
+
+        <span class="s3"># Write the CSV data into the response</span>
+        <span class="s1">response</span><span class="s2">.</span><span class="s1">write</span><span class="s2">(</span><span class="s1">csv_data</span><span class="s2">)</span>
+
+        <span class="s0">return </span><span class="s1">response</span>
+    <span class="s0">else</span><span class="s2">:</span>
+        <span class="s0">return </span><span class="s1">HttpResponse</span><span class="s2">(</span><span class="s4">&quot;No data available to export&quot;</span><span class="s2">, </span><span class="s1">status</span><span class="s2">=</span><span class="s5">400</span><span class="s2">)</span>
+
+
+
+<span class="s0">def </span><span class="s1">export_pdf_file</span><span class="s2">(</span><span class="s1">dataframe</span><span class="s2">):</span>
+    <span class="s3"># Create a BytesIO buffer to hold the PDF file in memory</span>
+    <span class="s1">buffer </span><span class="s2">= </span><span class="s1">BytesIO</span><span class="s2">()</span>
+
+    <span class="s3"># Create a PDF using reportlab</span>
+    <span class="s1">p </span><span class="s2">= </span><span class="s1">canvas</span><span class="s2">.</span><span class="s1">Canvas</span><span class="s2">(</span><span class="s1">buffer</span><span class="s2">, </span><span class="s1">pagesize</span><span class="s2">=</span><span class="s1">letter</span><span class="s2">)</span>
+    <span class="s1">width</span><span class="s2">, </span><span class="s1">height </span><span class="s2">= </span><span class="s1">letter</span>
+
+    <span class="s3"># Title for the PDF</span>
+    <span class="s1">p</span><span class="s2">.</span><span class="s1">setFont</span><span class="s2">(</span><span class="s4">&quot;Helvetica-Bold&quot;</span><span class="s2">, </span><span class="s5">16</span><span class="s2">)</span>
+    <span class="s1">p</span><span class="s2">.</span><span class="s1">drawString</span><span class="s2">(</span><span class="s5">100</span><span class="s2">, </span><span class="s1">height </span><span class="s2">- </span><span class="s5">50</span><span class="s2">, </span><span class="s4">&quot;Data Export&quot;</span><span class="s2">)</span>
+
+    <span class="s3"># Move down for table content</span>
+    <span class="s1">p</span><span class="s2">.</span><span class="s1">setFont</span><span class="s2">(</span><span class="s4">&quot;Helvetica&quot;</span><span class="s2">, </span><span class="s5">12</span><span class="s2">)</span>
+
+    <span class="s3"># Start at a fixed vertical position</span>
+    <span class="s1">y_position </span><span class="s2">= </span><span class="s1">height </span><span class="s2">- </span><span class="s5">100</span>
+
+    <span class="s3"># Column headers</span>
+    <span class="s1">columns </span><span class="s2">= </span><span class="s1">dataframe</span><span class="s2">.</span><span class="s1">columns</span><span class="s2">.</span><span class="s1">tolist</span><span class="s2">()</span>
+    <span class="s1">col_widths </span><span class="s2">= </span><span class="s5">100  </span><span class="s3"># Fixed column width</span>
+    <span class="s1">x_position </span><span class="s2">= </span><span class="s5">50  </span><span class="s3"># Starting position for the first column</span>
+
+    <span class="s3"># Draw column headers</span>
+    <span class="s0">for </span><span class="s1">i</span><span class="s2">, </span><span class="s1">col </span><span class="s0">in </span><span class="s1">enumerate</span><span class="s2">(</span><span class="s1">columns</span><span class="s2">):</span>
+        <span class="s1">p</span><span class="s2">.</span><span class="s1">drawString</span><span class="s2">(</span><span class="s1">x_position </span><span class="s2">+ </span><span class="s1">i </span><span class="s2">* </span><span class="s1">col_widths</span><span class="s2">, </span><span class="s1">y_position</span><span class="s2">, </span><span class="s1">col</span><span class="s2">)</span>
+
+    <span class="s3"># Draw rows (data)</span>
+    <span class="s1">y_position </span><span class="s2">-= </span><span class="s5">20  </span><span class="s3"># Move down for row data</span>
+    <span class="s0">for </span><span class="s1">index</span><span class="s2">, </span><span class="s1">row </span><span class="s0">in </span><span class="s1">dataframe</span><span class="s2">.</span><span class="s1">iterrows</span><span class="s2">():</span>
+        <span class="s0">for </span><span class="s1">i</span><span class="s2">, </span><span class="s1">value </span><span class="s0">in </span><span class="s1">enumerate</span><span class="s2">(</span><span class="s1">row</span><span class="s2">):</span>
+            <span class="s1">p</span><span class="s2">.</span><span class="s1">drawString</span><span class="s2">(</span><span class="s1">x_position </span><span class="s2">+ </span><span class="s1">i </span><span class="s2">* </span><span class="s1">col_widths</span><span class="s2">, </span><span class="s1">y_position</span><span class="s2">, </span><span class="s1">str</span><span class="s2">(</span><span class="s1">value</span><span class="s2">))</span>
+        <span class="s1">y_position </span><span class="s2">-= </span><span class="s5">20  </span><span class="s3"># Move to the next line for the next row</span>
+
+        <span class="s3"># Check if page is full, and create a new page if necessary</span>
+        <span class="s0">if </span><span class="s1">y_position </span><span class="s2">&lt; </span><span class="s5">50</span><span class="s2">:</span>
+            <span class="s1">p</span><span class="s2">.</span><span class="s1">showPage</span><span class="s2">()  </span><span class="s3"># Finish the current page</span>
+            <span class="s1">p</span><span class="s2">.</span><span class="s1">setFont</span><span class="s2">(</span><span class="s4">&quot;Helvetica&quot;</span><span class="s2">, </span><span class="s5">12</span><span class="s2">)  </span><span class="s3"># Reset the font</span>
+            <span class="s1">y_position </span><span class="s2">= </span><span class="s1">height </span><span class="s2">- </span><span class="s5">50  </span><span class="s3"># Start from the top of the new page</span>
+
+    <span class="s3"># Save the PDF</span>
+    <span class="s1">p</span><span class="s2">.</span><span class="s1">save</span><span class="s2">()</span>
+
+    <span class="s3"># Move buffer's position to the start</span>
+    <span class="s1">buffer</span><span class="s2">.</span><span class="s1">seek</span><span class="s2">(</span><span class="s5">0</span><span class="s2">)</span>
+
+    <span class="s0">return </span><span class="s1">buffer</span>
+
+<span class="s0">def </span><span class="s1">download_pdf</span><span class="s2">(</span><span class="s1">request</span><span class="s2">):</span>
+    <span class="s3"># Sample DataFrame, replace this with your actual data</span>
+    <span class="s1">df </span><span class="s2">= </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">DataFrame</span><span class="s2">({</span>
+        <span class="s4">'Column1'</span><span class="s2">: [</span><span class="s5">1</span><span class="s2">, </span><span class="s5">2</span><span class="s2">, </span><span class="s5">3</span><span class="s2">],</span>
+        <span class="s4">'Column2'</span><span class="s2">: [</span><span class="s5">4</span><span class="s2">, </span><span class="s5">5</span><span class="s2">, </span><span class="s5">6</span><span class="s2">]</span>
+    <span class="s2">})</span>
+
+    <span class="s3"># Export to PDF using reportlab</span>
+    <span class="s1">buffer </span><span class="s2">= </span><span class="s1">export_pdf_file</span><span class="s2">(</span><span class="s1">df</span><span class="s2">)</span>
+
+    <span class="s3"># Create HTTP response to send as a file</span>
+    <span class="s1">response </span><span class="s2">= </span><span class="s1">HttpResponse</span><span class="s2">(</span><span class="s1">buffer</span><span class="s2">, </span><span class="s1">content_type</span><span class="s2">=</span><span class="s4">'application/pdf'</span><span class="s2">)</span>
+    <span class="s1">response</span><span class="s2">[</span><span class="s4">'Content-Disposition'</span><span class="s2">] = </span><span class="s4">'attachment; filename=&quot;output.pdf&quot;'</span>
+
+    <span class="s0">return </span><span class="s1">response</span>
+
+
+
+
+
+</pre>
+</body>
+</html>

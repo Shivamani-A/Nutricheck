@@ -1,0 +1,27 @@
+<html>
+<head>
+<title>urls.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #6aab73;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+urls.py</font>
+</center></td></tr></table>
+<pre><span class="s0">from </span><span class="s1">django</span><span class="s2">.</span><span class="s1">urls </span><span class="s0">import </span><span class="s1">path</span>
+<span class="s0">from </span><span class="s2">. </span><span class="s0">import </span><span class="s1">views</span>
+
+<span class="s1">urlpatterns </span><span class="s2">= [</span>
+    <span class="s1">path</span><span class="s2">(</span><span class="s3">'upload/'</span><span class="s2">, </span><span class="s1">views</span><span class="s2">.</span><span class="s1">process_excel</span><span class="s2">, </span><span class="s1">name</span><span class="s2">=</span><span class="s3">'process_excel'</span><span class="s2">),</span>
+<span class="s1">path</span><span class="s2">(</span><span class="s3">'download/csv/'</span><span class="s2">, </span><span class="s1">views</span><span class="s2">.</span><span class="s1">download_csv</span><span class="s2">, </span><span class="s1">name</span><span class="s2">=</span><span class="s3">'download_csv'</span><span class="s2">),</span>
+<span class="s1">path</span><span class="s2">(</span><span class="s3">'download/pdf/'</span><span class="s2">, </span><span class="s1">views</span><span class="s2">.</span><span class="s1">download_pdf</span><span class="s2">, </span><span class="s1">name</span><span class="s2">=</span><span class="s3">'download_pdf'</span><span class="s2">),</span>
+<span class="s2">]</span></pre>
+</body>
+</html>
