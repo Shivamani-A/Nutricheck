@@ -1,27 +1,48 @@
-{#<!DOCTYPE html>#}
-{#<html lang="en">#}
-{#<head>#}
-{#    <meta charset="UTF-8">#}
-{#    <title>Result</title>#}
-{#</head>#}
-{#<body>#}
-{#<h2>Processed Data</h2>#}
-{#    {{ table|safe }}#}
-{#</body>#}
-{#</html>#}
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>Processed Data Results</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>\
+    <style>
+        /* CSS to style disabled download buttons */
+        .disabled-link {
+            pointer-events: none;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>Processed Data Results</h1>
 
+        <!-- Filter Form -->
+        <form id="filterForm" method="GET">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="pdcaas_label">Filter by PDCAAS Label:</label>
+                    <select name="pdcaas_label" id="pdcaas_label" class="form-control">
+                        <option value="All" {% if pdcaas_label_filter == 'All' %}selected{% endif %}>All</option>
+                        <option value="Excellent Source" {% if pdcaas_label_filter == 'Excellent Source' %}selected{% endif %}>Excellent Source</option>
+                        <option value="Good Source" {% if pdcaas_label_filter == 'Good Source' %}selected{% endif %}>Good Source</option>
+                        <option value="No Claim" {% if pdcaas_label_filter == 'No Claim' %}selected{% endif %}>No Claim</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="ivpdcaas_label">Filter by IVPDCAAS Label:</label>
+                    <select name="ivpdcaas_label" id="ivpdcaas_label" class="form-control">
+                        <option value="All" {% if ivpdcaas_label_filter == 'All' %}selected{% endif %}>All</option>
+                        <option value="Excellent Source" {% if ivpdcaas_label_filter == 'Excellent Source' %}selected{% endif %}>Excellent Source</option>
+                        <option value="Good Source" {% if ivpdcaas_label_filter == 'Good Source' %}selected{% endif %}>Good Source</option>
+                        <option value="No Claim" {% if ivpdcaas_label_filter == 'No Claim' %}selected{% endif %}>No Claim</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+
         <!-- Display the table -->
-        <div>
+        <div class="mt-3" id="tableContainer">
             {{ table|safe }}
         </div>
 
@@ -29,8 +50,41 @@
         <div class="mt-3">
             <a href="{% url 'download_csv' %}" class="btn btn-primary">Download CSV</a>
             <a href="{% url 'download_pdf' %}" class="btn btn-danger">Download PDF</a>
-            <!-- You can add Excel or other formats if needed -->
         </div>
     </div>
+
+    <!-- JavaScript for AJAX filtering -->
+    <script>
+    $(document).ready(function () {
+        // Trigger AJAX when filters change
+        $('#pdcaas_label, #ivpdcaas_label').change(function () {
+            $.ajax({
+                url: '{% url "process_excel" %}',
+                type: 'GET',
+                data: $('#filterForm').serialize(),  // Serialize form data for GET request
+                success: function (response) {
+                    if (response.is_empty) {
+                        // Display "No results found" message and disable download buttons
+                        $('#tableContainer').html('<div class="alert alert-warning">No results found for the filters applied.</div>');
+
+                        // Add disabled-link class to disable download links
+                        $('a.btn').addClass('disabled-link');
+                    } else {
+                        // Show the table and enable download buttons
+                        $('#tableContainer').html(response.table_html);
+
+                        // Remove disabled-link class to enable download links
+                        $('a.btn').removeClass('disabled-link');
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while filtering data.');
+                }
+            });
+        });
+    });
+</script>
+
+
 </body>
 </html>
