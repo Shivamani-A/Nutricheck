@@ -1,25 +1,21 @@
-import io
-import openpyxl
+
 import re
 import pandas as pd
 from django.http import JsonResponse
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from io import StringIO, BytesIO
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, landscape
-from reportlab.lib.units import inch
+
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, PageBreak
-from reportlab.pdfbase.ttfonts import TTFont
+
 from reportlab.pdfbase import pdfmetrics
 
 from .forms import ExcelUploadForm
 from .models import ProteinData
 
-# from django.template.loader import render_to_string
-# from weasyprint import HTML
-# import tempfile
 
 # Create your views here.
 
