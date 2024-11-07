@@ -242,4 +242,3 @@ def export_pdf(dataframe):
     except Exception as e:
         print("Error generating PDF:", e)  # Log error for debugging
         return None
-
