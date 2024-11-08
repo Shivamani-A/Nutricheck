@@ -184,7 +184,6 @@ def download_pdf(request):
     else:
         return HttpResponse("No data available to export", status=400)
 
-# pdfmetrics.registerFont(TTFont('Helvetica', 'Helvetica.ttf'))
 
 # PDF export function with dynamic column width adjustments
 def export_pdf(dataframe):
