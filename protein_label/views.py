@@ -3,7 +3,7 @@ import re
 import pandas as pd
 from django.http import JsonResponse
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from io import StringIO, BytesIO
 
 from reportlab.lib import colors
@@ -34,6 +34,7 @@ RACC_VALUES = {
 }
 
 def home(request):
+    print("Home view called.")
     return render(request, 'index.html')
 
 def label_source(value):
@@ -56,6 +57,8 @@ def extract_keyword(product_name):
     return None  # Return None if no keyword matches
 
 def process_excel(request):
+    print("Processing Excel file...")
+
     if request.method == 'POST' and 'file' in request.FILES:
         # Handle initial file upload
         form = ExcelUploadForm(request.POST, request.FILES)
@@ -107,7 +110,7 @@ def process_excel(request):
 
 
     elif request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
-
+        print("Handling AJAX filtering request...")
         # Handle AJAX filtering
 
         df_dict = request.session.get('original_data', None)  # Start with the original data
@@ -136,6 +139,8 @@ def process_excel(request):
 
             request.session['filtered_data'] = df.to_dict(orient='list') if not is_empty else request.session[
                 'original_data']
+
+            print(request.session.get('filtered_data', 'No Data Found')) ## for debugging
 
             # Convert filtered DataFrame to an HTML table or return a message if empty
 
@@ -237,3 +242,50 @@ def export_pdf(dataframe):
     except Exception as e:
         print("Error generating PDF:", e)  # Log error for debugging
         return None
+
+def chart_view(request):
+    print("Chart view called.")
+    filtered_data = request.session.get('filtered_data', None)
+    if not filtered_data:
+        print("No filtered data found in session.")
+        return render(request, 'chart.html', {'error': 'No data available for visualization.'})
+
+    df = pd.DataFrame.from_dict(filtered_data)
+    pdcaas_distribution = df['PDCAAS label'].value_counts().to_dict()
+    ivpdcaas_distribution = df['IVPDCAAS label'].value_counts().to_dict()
+
+    chart_data = {
+        'pdcaas': [{'label': key, 'count': value} for key, value in pdcaas_distribution.items()],
+        'ivpdcaas': [{'label': key, 'count': value} for key, value in ivpdcaas_distribution.items()],
+    }
+
+    print("Chart Data:", chart_data)
+    return render(request, 'chart.html', {'chart_data': chart_data})
+
+
+# def chart_view(request):
+#     print("Chart view called.")
+#     # Retrieve chart data from session
+#     filtered_data = request.session.get('filtered_data', None)
+#
+#     if not filtered_data:
+#         print("No filtered data found in session.")
+#         return render(request, 'chart.html', {'error': 'No data available for visualization.'})
+#
+#     if filtered_data:
+#         df = pd.DataFrame.from_dict(filtered_data)
+#
+#         # Check if necessary columns exist
+#         if 'PDCAAS label' in df.columns and 'IVPDCAAS label' in df.columns:
+#             pdcaas_counts = df['PDCAAS label'].value_counts().to_dict()
+#             ivpdcaas_counts = df['IVPDCAAS label'].value_counts().to_dict()
+#
+#             chart_data = {
+#                 'pdcaas': [{'label': label, 'count': count} for label, count in pdcaas_counts.items()],
+#                 'ivpdcaas': [{'label': label, 'count': count} for label, count in ivpdcaas_counts.items()]
+#             }
+#             return render(request, 'chart.html', {'chart_data': chart_data})
+#
+#     # Redirect if no valid data found
+#     return redirect('process_excel')
+
