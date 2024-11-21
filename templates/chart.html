@@ -42,18 +42,17 @@
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item"><a href="{% url 'home' %}" class="nav-link">Home</a></li>
                     <li class="nav-item active"><a href="{% url 'process_excel' %}" class="nav-link">Upload Files</a></li>
-                    <li class="nav-item"><a href="{% url 'chart' %}" class="nav-link">Data Visualization</a></li>
+                    <li class="nav-item active"><a href="{% url 'chart' %}" class="nav-link">Data Visualization</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Data Visualization Section -->
+    <!-- PDCAAS and IVPDCAAS Section -->
     <section class="ftco-section bg-light">
         <div class="container">
-            <h2 class="text-center text-primary mb-4">Data Visualization</h2>
-            <p class="text-center">Visualization of PDCAAS and IVPDCAAS Data</p>
-
+            <h2 class="text-primary text-center mb-4">Data Visualization</h2>
+            <p class="text-center">Polar Area Charts of PDCAAS and IVPDCAAS Distribution</p>
             <div class="row">
                 <div class="col-md-6">
                     <h4 class="text-center">PDCAAS Distribution</h4>
@@ -64,6 +63,24 @@
                     <canvas id="ivpdcaasChart" width="400" height="400"></canvas>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Amino Acid Composition Section -->
+    <section class="ftco-section bg-light">
+        <div class="container">
+            <h2 class="text-primary text-center mb-4">Amino Acid Composition</h2>
+            <p class="text-center">Stacked Bar Chart of Amino Acid Composition for Each Sample</p>
+            <canvas id="aminoAcidChart" width="800" height="400"></canvas>
+        </div>
+    </section>
+
+    <!-- Protein Percentage Comparison Section -->
+    <section class="ftco-section bg-light">
+        <div class="container">
+            <h2 class="text-primary text-center mb-4">Protein Percentage Comparison</h2>
+            <p class="text-center">Bar Chart Comparing the PROTEIN % Across Different Samples</p>
+            <canvas id="proteinChart" width="800" height="400"></canvas>
         </div>
     </section>
 
@@ -80,22 +97,14 @@
         </div>
     </footer>
 
-    <script src="{% static 'js/jquery.min.js' %}"></script>
-    <script src="{% static 'js/bootstrap.min.js' %}"></script>
     <script>
-        // Pass chart_data from the backend to JavaScript
+        // Chart Data
         const chartData = {{ chart_data|safe }};
         console.log("Chart Data:", chartData);
 
-        // Data for PDCAAS Chart
+        // Polar Area Chart for PDCAAS
         const pdcaasLabels = chartData.pdcaas.map(item => item.label);
         const pdcaasCounts = chartData.pdcaas.map(item => item.count);
-
-        // Data for IVPDCAAS Chart
-        const ivpdcaasLabels = chartData.ivpdcaas.map(item => item.label);
-        const ivpdcaasCounts = chartData.ivpdcaas.map(item => item.count);
-
-        // Create PDCAAS Chart
         const ctx1 = document.getElementById('pdcaasChart').getContext('2d');
         new Chart(ctx1, {
             type: 'polarArea',
@@ -117,7 +126,9 @@
             }
         });
 
-        // Create IVPDCAAS Chart
+        // Polar Area Chart for IVPDCAAS
+        const ivpdcaasLabels = chartData.ivpdcaas.map(item => item.label);
+        const ivpdcaasCounts = chartData.ivpdcaas.map(item => item.count);
         const ctx2 = document.getElementById('ivpdcaasChart').getContext('2d');
         new Chart(ctx2, {
             type: 'polarArea',
@@ -138,9 +149,130 @@
                 }
             }
         });
+
+        // Stacked Bar Chart for Amino Acid Composition
+        const aminoAcidData = chartData.amino_acids;
+        const samples = aminoAcidData.map(item => item.sample);
+        const aminoAcidNames = Object.keys(aminoAcidData[0]).filter(key => key !== 'sample');
+
+        const datasets = aminoAcidNames.map(aminoAcid => {
+            return {
+                label: aminoAcid,
+                data: aminoAcidData.map(item => item[aminoAcid]),
+                backgroundColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.6)`,
+            };
+        });
+
+        const ctx3 = document.getElementById('aminoAcidChart').getContext('2d');
+        new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: samples,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                    },
+                    y: {
+                        stacked: true,
+                    }
+                }
+            }
+        });
+
+        // Protein Percentage Comparison
+        const proteinSamples = chartData.proteins.map(item => item.sample);
+        const proteinPercentages = chartData.proteins.map(item => item.protein);
+
+        const ctx4 = document.getElementById('proteinChart').getContext('2d');
+        new Chart(ctx4, {
+            type: 'bar',
+            data: {
+                labels: proteinSamples,
+                datasets: [{
+                    label: 'Protein %',
+                    data: proteinPercentages,
+                    backgroundColor: '#36a2eb',
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Samples'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Protein %'
+                        }
+                    }
+                }
+            }
+        });
+        
+        {#// Bar Chart for Protein Percentage Comparison#}
+        {#const proteinSamples = chartData.amino_acids.map(item => item.sample);#}
+        {#const proteinPercentages = chartData.amino_acids.map(item => item.PROTEIN);#}
+        {##}
+        {#const ctx4 = document.getElementById('proteinChart').getContext('2d');#}
+        {#new Chart(ctx4, {#}
+        {#    type: 'bar',#}
+        {#    data: {#}
+        {#        labels: proteinSamples,#}
+        {#        datasets: [{#}
+        {#            label: 'Protein %',#}
+        {#            data: proteinPercentages,#}
+        {#            backgroundColor: '#36a2eb',#}
+        {#        }]#}
+        {#    },#}
+        {#    options: {#}
+        {#        responsive: true,#}
+        {#        plugins: {#}
+        {#            legend: {#}
+        {#                position: 'top',#}
+        {#            }#}
+        {#        },#}
+        {#        scales: {#}
+        {#            x: {#}
+        {#                title: {#}
+        {#                    display: true,#}
+        {#                    text: 'Samples'#}
+        {#                }#}
+        {#            },#}
+        {#            y: {#}
+        {#                title: {#}
+        {#                    display: true,#}
+        {#                    text: 'Protein %'#}
+        {#                }#}
+        {#            }#}
+        {#        }#}
+        {#    }#}
+        //});
+        {##}
     </script>
 </body>
 </html>
+
+
+
+
 
 
 
@@ -149,28 +281,85 @@
 {#<html lang="en">#}
 {#<head>#}
 {#    <meta charset="UTF-8">#}
-{#    <meta name="viewport" content="width=device-width, initial-scale=1.0">#}
-{#    <title>Data Visualization</title>#}
+{#    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">#}
+{#    <title>Nutricheck - Data Visualization</title>#}
+{#    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">#}
+{#    <link rel="stylesheet" href="{% static 'css/style.css' %}">#}
 {#    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>#}
 {#</head>#}
-{#<body>#}
-{#    <div class="container text-center">#}
-{#        <h2 class="text-primary mt-4">Data Visualization</h2>#}
-{#        <p>Visualization of PDCAAS and IVPDCAAS Data</p>#}
-{##}
-{#        <!-- Canvas for PDCAAS Chart -->#}
-{#        <div>#}
-{#            <h4>PDCAAS Distribution</h4>#}
-{#            <canvas id="pdcaasChart" width="400" height="400"></canvas>#}
-{#        </div>#}
-{##}
-{#        <!-- Canvas for IVPDCAAS Chart -->#}
-{#        <div>#}
-{#            <h4>IVPDCAAS Distribution</h4>#}
-{#            <canvas id="ivpdcaasChart" width="100" height="100"></canvas>#}
+{#<body class="goto-here">#}
+{#    <!-- Header Section -->#}
+{#    <div class="py-1 bg-primary">#}
+{#        <div class="container">#}
+{#            <div class="row no-gutters d-flex align-items-start align-items-center px-md-0">#}
+{#                <div class="col-lg-12 d-block">#}
+{#                    <div class="row d-flex">#}
+{#                        <div class="col-md pr-4 d-flex topper align-items-center">#}
+{#                            <span class="text">Group 10</span>#}
+{#                        </div>#}
+{#                        <div class="col-md pr-4 d-flex topper align-items-center">#}
+{#                            <span class="text">Guelph Research Center</span>#}
+{#                        </div>#}
+{#                        <div class="col-md-5 pr-4 d-flex topper align-items-center text-lg-right">#}
+{#                            <span class="text">COMP8967 Internship Project 1</span>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
 {#        </div>#}
 {#    </div>#}
 {##}
+{#    <!-- Navbar Section -->#}
+{#    <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">#}
+{#        <div class="container">#}
+{#            <a class="navbar-brand" href="{% url 'home' %}">Nutricheck</a>#}
+{#            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">#}
+{#                <span class="oi oi-menu"></span> Menu#}
+{#            </button>#}
+{#            <div class="collapse navbar-collapse" id="ftco-nav">#}
+{#                <ul class="navbar-nav ml-auto">#}
+{#                    <li class="nav-item"><a href="{% url 'home' %}" class="nav-link">Home</a></li>#}
+{#                    <li class="nav-item active"><a href="{% url 'process_excel' %}" class="nav-link">Upload Files</a></li>#}
+{#                    <li class="nav-item"><a href="{% url 'chart' %}" class="nav-link">Data Visualization</a></li>#}
+{#                </ul>#}
+{#            </div>#}
+{#        </div>#}
+{#    </nav>#}
+{##}
+{#    <!-- Data Visualization Section -->#}
+{#    <section class="ftco-section bg-light">#}
+{#        <div class="container">#}
+{#            <h2 class="text-center text-primary mb-4">Data Visualization</h2>#}
+{#            <p class="text-center">Visualization of PDCAAS and IVPDCAAS Data</p>#}
+{##}
+{#            <div class="row">#}
+{#                <div class="col-md-6">#}
+{#                    <h4 class="text-center">PDCAAS Distribution</h4>#}
+{#                    <canvas id="pdcaasChart" width="400" height="400"></canvas>#}
+{#                </div>#}
+{#                <div class="col-md-6">#}
+{#                    <h4 class="text-center">IVPDCAAS Distribution</h4>#}
+{#                    <canvas id="ivpdcaasChart" width="400" height="400"></canvas>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </section>#}
+{##}
+{#    <!-- Footer Section -->#}
+{#    <footer class="ftco-footer ftco-section">#}
+{#        <div class="container">#}
+{#            <div class="row">#}
+{#                <div class="col-md-12 text-center">#}
+{#                    <p>#}
+{#                        Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved#}
+{#                    </p>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </footer>#}
+{##}
+{#    <script src="{% static 'js/jquery.min.js' %}"></script>#}
+{#    <script src="{% static 'js/bootstrap.min.js' %}"></script>#}
 {#    <script>#}
 {#        // Pass chart_data from the backend to JavaScript#}
 {#        const chartData = {{ chart_data|safe }};#}
