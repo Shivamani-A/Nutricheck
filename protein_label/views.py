@@ -13,24 +13,50 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, PageBreak
 
 from reportlab.pdfbase import pdfmetrics
 
-from .forms import ExcelUploadForm
+from .forms import ExcelUploadForm, ManualInputForm
 from .models import ProteinData
 
 
 # Create your views here.
 
 # Define the RACC values as a dictionary
-RACC_VALUES = {
-    'bean': 35,
-    'chickpea': 35,
-    'lentil': 35,
-    'pea': 35,
+FLOURS_AND_CEREALS_RACC_VALUES = {
+    ### --Cereals/Grains--
     'hemp': 15,
     'oats': 40,
-    'wheat': 40,
-    'soy': 35,
+    'wheat': 15,
+    'corn meal': 30,
+    'rice': 45,
+    'barley': 45,
+    ### --Flours--
     'buckwheat': 30,
-    'pinto': 15
+    'potato': 30,
+    'corn ': 30,
+    'sorghum': 30,
+    'rye': 30,
+    'almond': 15,
+    'soya': 15,
+    'coconut': 15,
+    'peanut': 15,
+    'chia seeds':15,
+    'tapioca': 15,
+    'flax': 15,
+    'bran': 15,
+    'barley': 30,
+}
+
+LEGUMES_RACC_VALUES = {
+    'lentil': 35,
+    'tofu': 85,
+    'bean': 35,
+    'pea': 35,
+    'soy': 35,
+    'chickpea': 35,
+}
+
+RACC_CATEGORIES = {
+    'FLOURS_AND_CEREALS': FLOURS_AND_CEREALS_RACC_VALUES,
+    'LEGUMES': LEGUMES_RACC_VALUES,
 }
 
 def home(request):
@@ -47,13 +73,17 @@ def label_source(value):
     else:
         return 'No Claim'
 
-# Function to extract keywords from the sample column and find the corresponding RACC value
-def extract_keyword(product_name):
+def extract_keyword_and_category(product_name):
     product_name = product_name.lower()  # Convert to lowercase for matching
-    for keyword in RACC_VALUES:
-        # Use regular expressions to find the keyword in the product name
-        if re.search(r'\b' + keyword + r'\b', product_name):
-            return keyword  # Return the matched keyword if found
+    for category, racc_values in RACC_CATEGORIES.items():
+        for keyword in racc_values:
+            # Use regular expressions to find the keyword in the product name
+            if re.search(r'\b' + re.escape(keyword) + r'\b', product_name):
+                return {
+                    'keyword': keyword,  # The matched keyword
+                    'category': category,  # The category it belongs to
+                    'racc_value': racc_values[keyword]  # The RACC value
+                }
     return None  # Return None if no keyword matches
 
 def process_excel(request):
@@ -69,32 +99,44 @@ def process_excel(request):
             # Clear old entries from ProteinData table (if necessary)
             ProteinData.objects.all().delete()
 
-            # Ensure the 'sample' column is in lowercase and has no leading/trailing spaces
+            # Ensure the 'SAMPLE' column is in lowercase and has no leading/trailing spaces
             df['SAMPLE'] = df['SAMPLE'].str.lower().str.strip()
 
             # Apply calculations row by row
             def calculate_labels(row):
-                product = extract_keyword(row['SAMPLE'])
-                protein_percent = row['PROTEIN %']
-                pdcaas = row['PDCAAS']
-                ivpdcaas = row['IVPDCAAS']
+                product_info = extract_keyword_and_category(row['SAMPLE'])
+                protein_percent = row.get('PROTEIN %', 0)
+                pdcaas = row.get('PDCAAS', 0)
+                ivpdcaas = row.get('IVPDCAAS', 0)
 
-                if product:
-                    racc_value = RACC_VALUES[product]
+                if product_info:
+                    racc_value = product_info['racc_value']
                     pdcaas_result = (protein_percent / 100) * racc_value * (pdcaas / 100)
                     pdcaas_label = label_source(pdcaas_result)
 
                     ivpdcaas_result = (protein_percent / 100) * racc_value * (ivpdcaas / 100)
                     ivpdcaas_label = label_source(ivpdcaas_result)
 
-                    return pd.Series({'PDCAAS claim': round(pdcaas_result, 2), 'PDCAAS label': pdcaas_label,
-                                      'IVPDCAAS claim': round(ivpdcaas_result, 2), 'IVPDCAAS label': ivpdcaas_label})
+                    return pd.Series({
+                        # 'Category': product_info['category'],
+                        # 'Keyword': product_info['keyword'],
+                        'PDCAAS claim': round(pdcaas_result, 2),
+                        'PDCAAS label': pdcaas_label,
+                        'IVPDCAAS claim': round(ivpdcaas_result, 2),
+                        'IVPDCAAS label': ivpdcaas_label,
+                    })
                 else:
-                    return pd.Series({'PDCAAS claim': 'Unknown', 'PDCAAS label': 'Unknown',
-                                      'IVPDCAAS claim': 'Unknown', 'IVPDCAAS label': 'Unknown'})
+                    return pd.Series({
+                        # 'Category': 'Unknown',
+                        # 'Keyword': 'Unknown',
+                        'PDCAAS claim': 'Unknown',
+                        'PDCAAS label': 'Unknown',
+                        'IVPDCAAS claim': 'Unknown',
+                        'IVPDCAAS label': 'Unknown',
+                    })
 
             # Apply the calculation to each row
-            df[['PDCAAS claim', 'PDCAAS label', 'IVPDCAAS claim', 'IVPDCAAS label']] = df.apply(calculate_labels, axis=1)
+            df = df.join(df.apply(calculate_labels, axis=1))
 
             # Store the original processed data in session for future filtering or downloads
             request.session['original_data'] = df.to_dict(orient='list')
@@ -108,22 +150,18 @@ def process_excel(request):
                 'ivpdcaas_label_filter': 'All'
             })
 
-
     elif request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         print("Handling AJAX filtering request...")
         # Handle AJAX filtering
-
         df_dict = request.session.get('original_data', None)  # Start with the original data
 
         if df_dict is not None:
-
             df = pd.DataFrame.from_dict(df_dict)
 
             # Apply filters based on AJAX request
-
             pdcaas_label_filter = request.GET.get('pdcaas_label', 'All')
-
             ivpdcaas_label_filter = request.GET.get('ivpdcaas_label', 'All')
+            category_filter = request.GET.get('category', 'All')
 
             if pdcaas_label_filter != 'All':
                 df = df[df['PDCAAS label'] == pdcaas_label_filter]
@@ -131,29 +169,28 @@ def process_excel(request):
             if ivpdcaas_label_filter != 'All':
                 df = df[df['IVPDCAAS label'] == ivpdcaas_label_filter]
 
-            # Check if the filtered DataFrame is empty
+            if category_filter != 'All':
+                df = df[df['Category'] == category_filter]
 
+            # Check if the filtered DataFrame is empty
             is_empty = df.empty
 
             # Update the session with the filtered data if there are results
-
             request.session['filtered_data'] = df.to_dict(orient='list') if not is_empty else request.session[
                 'original_data']
 
-            print(request.session.get('filtered_data', 'No Data Found')) ## for debugging
+            print(request.session.get('filtered_data', 'No Data Found'))  # for debugging
 
             # Convert filtered DataFrame to an HTML table or return a message if empty
-
             table_html = '<div class="alert alert-warning">No results found for the filters applied.</div>' if is_empty else df.to_html(
                 classes='table table-striped')
 
             return JsonResponse({'table_html': table_html, 'is_empty': is_empty})
 
-        # If there's no file or the method is GET without AJAX, render the upload form
-
+    # If there's no file or the method is GET without AJAX, render the upload form
     form = ExcelUploadForm()
-
     return render(request, 'upload.html', {'form': form})
+
 
 def download_csv(request):
     # Use filtered data if available
@@ -282,4 +319,50 @@ def chart_view(request):
     print("Chart Data:", chart_data)
     return render(request, 'chart.html', {'chart_data': chart_data})
 
+def manual_input(request):
+    result = None
+    if request.method == 'POST':
+        form = ManualInputForm(request.POST)
+        if form.is_valid():
+            # Extract form data
+            sample = form.cleaned_data['sample'].lower().strip()
+            sample_name = form.cleaned_data['sample']
+            protein_percent = form.cleaned_data['protein_percent']
+            pdcaas = form.cleaned_data['pdcaas']
+            ivpdcaas = form.cleaned_data['ivpdcaas']
 
+            # Determine the RACC value and category based on the sample keyword
+            product_info = extract_keyword_and_category(sample)
+
+            if product_info:
+                racc_value = product_info['racc_value']
+                category = product_info['category']
+                keyword = product_info['keyword']
+
+                # Calculate claims and labels
+                pdcaas_result = (protein_percent / 100) * racc_value * (pdcaas / 100)
+                pdcaas_label = label_source(pdcaas_result)
+
+                ivpdcaas_result = (protein_percent / 100) * racc_value * (ivpdcaas / 100)
+                ivpdcaas_label = label_source(ivpdcaas_result)
+
+                # Prepare results
+                result = {
+                    'sample': sample,
+                    'sample_name': sample_name,
+                    'category': category,
+                    'keyword': keyword,
+                    'racc_value': racc_value,
+                    'pdcaas_result': round(pdcaas_result, 2),
+                    'pdcaas_label': pdcaas_label,
+                    'ivpdcaas_result': round(ivpdcaas_result, 2),
+                    'ivpdcaas_label': ivpdcaas_label,
+                }
+            else:
+                result = {
+                    'error': f"No RACC value found for the sample '{sample}'. Please ensure it matches a known product."
+                }
+    else:
+        form = ManualInputForm()
+
+    return render(request, 'manual_input.html', {'form': form, 'result': result})

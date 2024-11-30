@@ -1,0 +1,256 @@
+{#{% extends "base.html" %}#}
+{##}
+{#{% block title %}Manual Input for Protein Data{% endblock %}#}
+{##}
+{#{% block content %}#}
+{#<section class="bg-light py-5">#}
+{#    <div class="container">#}
+{#        <!-- Page Header -->#}
+{#        <div class="row justify-content-center">#}
+{#            <div class="col-md-8">#}
+{#                <div class="text-center bg-primary text-white rounded py-4">#}
+{#                    <h1 class="display-6">Manual Input for Protein Data</h1>#}
+{#                    <p class="mb-0">Fill in the details below to calculate PDCAAS and IVPDCAAS claims.</p>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{##}
+{#        <!-- Form Section -->#}
+{#        <div class="row justify-content-center mt-4">#}
+{#            <div class="col-md-8">#}
+{#                <div class="card border-0 shadow-sm">#}
+{#                    <div class="card-body">#}
+{#                        <h4 class="card-title text-primary">Protein Data Form</h4>#}
+{#                        <p class="card-text">Provide the required information and click <strong>Submit</strong>.</p>#}
+{#                        <form method="post" novalidate>#}
+{#                            {% csrf_token %}#}
+{##}
+{#                            <!-- Sample Name -->#}
+{#                            <div class="mb-3">#}
+{#                                <label for="id_sample" class="form-label">Sample Name</label>#}
+{#                                <input type="text" name="sample" id="id_sample" class="form-control {% if errors.sample %}is-invalid{% endif %}"#}
+{#                                       placeholder="Enter sample name" required>#}
+{#                                {% if errors.sample %}#}
+{#                                <div class="invalid-feedback">#}
+{#                                    {{ errors.sample }}#}
+{#                                </div>#}
+{#                                {% endif %}#}
+{#                            </div>#}
+{##}
+{#                            <!-- Protein Percentage -->#}
+{#                            <div class="mb-3">#}
+{#                                <label for="id_protein_percent" class="form-label">Protein (%)</label>#}
+{#                                <input type="number" step="0.01" name="protein_percent" id="id_protein_percent"#}
+{#                                       class="form-control {% if errors.protein_percent %}is-invalid{% endif %}"#}
+{#                                       placeholder="Enter protein percentage" required min="0" max="100">#}
+{#                                {% if errors.protein_percent %}#}
+{#                                <div class="invalid-feedback">#}
+{#                                    {{ errors.protein_percent }}#}
+{#                                </div>#}
+{#                                {% endif %}#}
+{#                            </div>#}
+{##}
+{#                            <!-- PDCAAS -->#}
+{#                            <div class="mb-3">#}
+{#                                <label for="id_pdcaas" class="form-label">PDCAAS (%)</label>#}
+{#                                <input type="number" step="0.01" name="pdcaas" id="id_pdcaas"#}
+{#                                       class="form-control {% if errors.pdcaas %}is-invalid{% endif %}"#}
+{#                                       placeholder="Enter PDCAAS percentage" required min="0" max="100">#}
+{#                                {% if errors.pdcaas %}#}
+{#                                <div class="invalid-feedback">#}
+{#                                    {{ errors.pdcaas }}#}
+{#                                </div>#}
+{#                                {% endif %}#}
+{#                            </div>#}
+{##}
+{#                            <!-- IVPDCAAS -->#}
+{#                            <div class="mb-3">#}
+{#                                <label for="id_ivpdcaas" class="form-label">IVPDCAAS (%)</label>#}
+{#                                <input type="number" step="0.01" name="ivpdcaas" id="id_ivpdcaas"#}
+{#                                       class="form-control {% if errors.ivpdcaas %}is-invalid{% endif %}"#}
+{#                                       placeholder="Enter IVPDCAAS percentage" required min="0" max="100">#}
+{#                                {% if errors.ivpdcaas %}#}
+{#                                <div class="invalid-feedback">#}
+{#                                    {{ errors.ivpdcaas }}#}
+{#                                </div>#}
+{#                                {% endif %}#}
+{#                            </div>#}
+{##}
+{#                            <button type="submit" class="btn bg-primary w-100">Submit</button>#}
+{#                        </form>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{##}
+{#    <!-- Results Modal -->#}
+{#    {% if result %}#}
+{#    <div class="modal fade" id="resultsModal" tabindex="-1" aria-labelledby="resultsModalLabel" aria-hidden="true">#}
+{#        <div class="modal-dialog modal-dialog-centered">#}
+{#            <div class="modal-content">#}
+{#                <div class="modal-header bg-primary text-white">#}
+{#                    <h5 class="modal-title" id="resultsModalLabel">Results for Sample: {{ result.sample_name }}</h5>#}
+{#                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>#}
+{#                </div>#}
+{#                <div class="modal-body">#}
+{#                    {% if result.error %}#}
+{#                    <div class="alert alert-danger">{{ result.error }}</div>#}
+{#                    {% else %}#}
+{#                    <ul class="list-group">#}
+{#                        <li class="list-group-item"><strong>PDCAAS Claim:</strong> {{ result.pdcaas_result }}</li>#}
+{#                        <li class="list-group-item"><strong>PDCAAS Label:</strong> {{ result.pdcaas_label }}</li>#}
+{#                        <li class="list-group-item"><strong>IVPDCAAS Claim:</strong> {{ result.ivpdcaas_result }}</li>#}
+{#                        <li class="list-group-item"><strong>IVPDCAAS Label:</strong> {{ result.ivpdcaas_label }}</li>#}
+{#                    </ul>#}
+{#                    {% endif %}#}
+{#                </div>#}
+{#                <div class="modal-footer">#}
+{#                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{#    {% endif %}#}
+{#</section>#}
+{##}
+{#<!-- Bootstrap JavaScript -->#}
+{#<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>#}
+{##}
+{#<!-- Automatically show the modal if result is present -->#}
+{#{% if result %}#}
+{#<script>#}
+{#    var resultsModal = new bootstrap.Modal(document.getElementById('resultsModal'));#}
+{#    resultsModal.show();#}
+{#</script>#}
+{#{% endif %}#}
+{#{% endblock %}#}
+
+{% extends "base.html" %}
+
+{% block title %}Manual Input for Protein Data{% endblock %}
+
+{% block content %}
+<section class="bg-light py-5">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="text-center bg-primary text-white rounded py-4">
+                    <h1 class="display-6 text-white">Manual Input for Protein Data</h1>
+                    <p class="mb-0">Fill in the details below to calculate PDCAAS and IVPDCAAS claims.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+{#                        <h4 class="card-title text-success">Protein Data Form</h4>#}
+{#                        <p class="card-text">Provide the required information and click <strong>Submit</strong>.</p>#}
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+
+                            <!-- Sample Name -->
+                            <div class="mb-3">
+                                <label for="id_sample" class="form-label">Sample Name</label>
+                                <input type="text" name="sample" id="id_sample" class="form-control {% if errors.sample %}is-invalid{% endif %}"
+                                       placeholder="Enter sample name" required>
+                                {% if errors.sample %}
+                                <div class="invalid-feedback">
+                                    {{ errors.sample }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Protein Percentage -->
+                            <div class="mb-3">
+                                <label for="id_protein_percent" class="form-label">Protein (%)</label>
+                                <input type="number" step="0.01" name="protein_percent" id="id_protein_percent"
+                                       class="form-control {% if errors.protein_percent %}is-invalid{% endif %}"
+                                       placeholder="Enter protein percentage" required min="0" max="100">
+                                {% if errors.protein_percent %}
+                                <div class="invalid-feedback">
+                                    {{ errors.protein_percent }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- PDCAAS -->
+                            <div class="mb-3">
+                                <label for="id_pdcaas" class="form-label">PDCAAS (%)</label>
+                                <input type="number" step="0.01" name="pdcaas" id="id_pdcaas"
+                                       class="form-control {% if errors.pdcaas %}is-invalid{% endif %}"
+                                       placeholder="Enter PDCAAS percentage" required min="0" max="100">
+                                {% if errors.pdcaas %}
+                                <div class="invalid-feedback">
+                                    {{ errors.pdcaas }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- IVPDCAAS -->
+                            <div class="mb-3">
+                                <label for="id_ivpdcaas" class="form-label">IVPDCAAS (%)</label>
+                                <input type="number" step="0.01" name="ivpdcaas" id="id_ivpdcaas"
+                                       class="form-control {% if errors.ivpdcaas %}is-invalid{% endif %}"
+                                       placeholder="Enter IVPDCAAS percentage" required min="0" max="100">
+                                {% if errors.ivpdcaas %}
+                                <div class="invalid-feedback">
+                                    {{ errors.ivpdcaas }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Modal -->
+    {% if result %}
+    <div class="modal fade" id="resultsModal" tabindex="-1" aria-labelledby="resultsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="resultsModalLabel">Results for Sample: {{ result.sample_name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {% if result.error %}
+                    <div class="alert alert-danger">{{ result.error }}</div>
+                    {% else %}
+                    <ul class="list-group">
+                        <li class="list-group-item"><strong>PDCAAS Claim:</strong> {{ result.pdcaas_result }}</li>
+                        <li class="list-group-item"><strong>PDCAAS Label:</strong> {{ result.pdcaas_label }}</li>
+                        <li class="list-group-item"><strong>IVPDCAAS Claim:</strong> {{ result.ivpdcaas_result }}</li>
+                        <li class="list-group-item"><strong>IVPDCAAS Label:</strong> {{ result.ivpdcaas_label }}</li>
+                    </ul>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Automatically show the modal if result is present -->
+{% if result %}
+<script>
+    var resultsModal = new bootstrap.Modal(document.getElementById('resultsModal'));
+    resultsModal.show();
+</script>
+{% endif %}
+{% endblock %}
+

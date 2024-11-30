@@ -7,4 +7,5 @@ path('', views.home, name='home'),
     path('download/csv/', views.download_csv, name='download_csv'),
     path('download/pdf/', views.download_pdf, name='download_pdf'),
     path('chart/', views.chart_view, name='chart'),
+    path('manual_input/', views.manual_input, name='manual_input'),
 ]

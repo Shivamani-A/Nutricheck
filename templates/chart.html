@@ -42,9 +42,8 @@
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item"><a href="{% url 'home' %}" class="nav-link">Home</a></li>
                     <li class="nav-item active"><a href="{% url 'process_excel' %}" class="nav-link">Upload Files</a></li>
-{#                    <li class="nav-item active"><a href="{% url 'process_excel' %}" class="nav-link">Data Results</a></li>#}
+                    <li class="nav-item active"><a href="{% url 'manual_input' %}" class="nav-link">Manual Input</a></li>
                     <li class="nav-item active"><a href="https://www.canada.ca/en/health-canada/services/technical-documents-labelling-requirements/nutrition-labelling-table-reference-amounts-food.html" class="nav-link">Regulatory Requirements</a></li>
-{#                    <li class="nav-item active"><a href="{% url 'chart' %}" class="nav-link">Data Visualization</a></li>#}
                 </ul>
             </div>
         </div>
@@ -212,62 +211,23 @@
                         position: 'top',
                     }
                 },
+                indexAxis: 'y',
                 scales: {
                     x: {
                         title: {
                             display: true,
-                            text: 'Samples'
+                            text: 'Protein %'
                         }
                     },
                     y: {
                         title: {
                             display: true,
-                            text: 'Protein %'
+                            text: 'Samples'
                         }
                     }
                 }
             }
         });
-        
-        {#// Bar Chart for Protein Percentage Comparison#}
-        {#const proteinSamples = chartData.amino_acids.map(item => item.sample);#}
-        {#const proteinPercentages = chartData.amino_acids.map(item => item.PROTEIN);#}
-        {##}
-        {#const ctx4 = document.getElementById('proteinChart').getContext('2d');#}
-        {#new Chart(ctx4, {#}
-        {#    type: 'bar',#}
-        {#    data: {#}
-        {#        labels: proteinSamples,#}
-        {#        datasets: [{#}
-        {#            label: 'Protein %',#}
-        {#            data: proteinPercentages,#}
-        {#            backgroundColor: '#36a2eb',#}
-        {#        }]#}
-        {#    },#}
-        {#    options: {#}
-        {#        responsive: true,#}
-        {#        plugins: {#}
-        {#            legend: {#}
-        {#                position: 'top',#}
-        {#            }#}
-        {#        },#}
-        {#        scales: {#}
-        {#            x: {#}
-        {#                title: {#}
-        {#                    display: true,#}
-        {#                    text: 'Samples'#}
-        {#                }#}
-        {#            },#}
-        {#            y: {#}
-        {#                title: {#}
-        {#                    display: true,#}
-        {#                    text: 'Protein %'#}
-        {#                }#}
-        {#            }#}
-        {#        }#}
-        {#    }#}
-        //});
-        {##}
     </script>
 </body>
 </html>
