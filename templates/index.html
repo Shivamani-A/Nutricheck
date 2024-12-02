@@ -133,8 +133,6 @@
         <div class="row justify-content-center mb-5 pb-3">
           <div class="col-md-7 heading-section ftco-animate text-center">
           	<span class="subheading">Team Details</span>
-            <h2 class="mb-4">Prof. Dr Shafaq Khan</h2>
-            <p>Internship Project 1</p>
           </div>
         </div>
         <div class="row ftco-animate">
@@ -220,20 +218,244 @@
         </div>
       </div>
     </section>
-    
-		<section class="ftco-section ftco-partner">
-            <div class="container d-flex align-items-center justify-content-center" style="height: 200px;">
-        <h2 class="category-wrap">Project Stakeholders</h2>
-    </div>
-    	<div class="container">
-    		<div class="row">
-    			<div class="col-sm ftco-animate">
-    				<a href="https://www.uwindsor.ca" class="partner"><img src="{% static 'images/Uwindsor_front.jpg'%}"  class="img-fluid alt="Colorlib Template"></a>
-    			</div>
-    			<div class="col-sm ftco-animate">
-    				<a href="https://profils-profiles.science.gc.ca/en/research-centre/guelph-research-and-development-centre" class="partner"><img src="{% static 'images/Guelph_research.jpeg'%}" class="img-fluid" alt="Colorlib Template"></a>
-    			</div>
-    		</div>
-    	</div>
-    </section>
 {% endblock %}
+
+{#{% extends 'base.html' %}#}
+{##}
+{#{% load static %}#}
+{##}
+{#{% block content %}#}
+{#    <section id="home-section" class="hero">#}
+{#        <div class="home-slider owl-carousel">#}
+{#            <div class="slider-item" style="background-image: url({% static 'images/bg1.jpg' %});">#}
+{#                <div class="overlay"></div>#}
+{#                <div class="container">#}
+{#                    <div class="row slider-text justify-content-center align-items-center" data-scrollax-parent="true">#}
+{#                        <div class="col-md-12 ftco-animate text-center">#}
+{#                            <h1 class="mb-2">We research on protein</h1>#}
+{#                            <h2 class="subheading mb-4">We determine PDCAAS</h2>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{##}
+{#            <div class="slider-item" style="background-image: url({% static 'images/bg2.jpg' %});">#}
+{#                <div class="overlay"></div>#}
+{#                <div class="container">#}
+{#                    <div class="row slider-text justify-content-center align-items-center" data-scrollax-parent="true">#}
+{#                        <div class="col-sm-12 ftco-animate text-center">#}
+{#                            <h1 class="mb-2">Find out the PDCAAS Claim</h1>#}
+{#                            <h2 class="subheading mb-4">Just provide the data and get results instantly</h2>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </section>#}
+{##}
+{#    <section class="ftco-section">#}
+{#        <div class="container">#}
+{#            <div class="row no-gutters ftco-services">#}
+{#                <!-- Upload Protein Data -->#}
+{#                <div class="col-md-3 text-center d-flex align-self-stretch ftco-animate">#}
+{#                    <div class="media block-6 services mb-md-0 mb-4">#}
+{#                        <div class="f active d-flex justify-content-center align-items-center mb-2">#}
+{#                            <img src="{% static 'images/protein.png' %}" height="100px" width="100px" alt="image">#}
+{#                        </div>#}
+{#                        <br>#}
+{#                        <div class="media-body">#}
+{#                            <h3 class="heading">Upload Protein Data</h3>#}
+{#                            <span>Provide excel file</span>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <!-- Get Protein Claims -->#}
+{#                <div class="col-md-3 text-center d-flex align-self-stretch ftco-animate">#}
+{#                    <div class="media services mb-md-0 mb-4">#}
+{#                        <div class="d-flex justify-content-center align-items-center">#}
+{#                            <img src="{% static 'images/output.png' %}" height="109px" width="100px" alt="image">#}
+{#                        </div>#}
+{#                        <br>#}
+{#                        <div class="media-body">#}
+{#                            <h3 class="heading">Get Protein Claims</h3>#}
+{#                            <span>View the results of corrected protein</span>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <!-- Filter Results -->#}
+{#                <div class="col-md-3 text-center d-flex align-self-stretch ftco-animate">#}
+{#                    <div class="media services mb-md-0 mb-4">#}
+{#                        <div class="d-flex justify-content-center align-items-center mb-2">#}
+{#                            <img src="{% static 'images/filter.png' %}" height="100px" width="100px" alt="image">#}
+{#                        </div>#}
+{#                        <br>#}
+{#                        <div class="media-body">#}
+{#                            <h3 class="heading">Filter Results</h3>#}
+{#                            <span>Get Better Clarity with specific results</span>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <!-- Download Results -->#}
+{#                <div class="col-md-3 text-center d-flex align-self-stretch ftco-animate">#}
+{#                    <div class="media block-6 services mb-md-0 mb-4">#}
+{#                        <div class="d-flex justify-content-center align-items-center mb-2">#}
+{#                            <img src="{% static 'images/download.png' %}" height="100px" width="100px" alt="image">#}
+{#                        </div>#}
+{#                        <br>#}
+{#                        <div class="media-body">#}
+{#                            <h3 class="heading">Download Result</h3>#}
+{#                            <span>Export results in Desired format</span>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </section>#}
+{##}
+{#    <section>#}
+{#        <div class="container d-flex align-items-center justify-content-center" style="height: 200px;">#}
+{#            <h2 class="category-wrap">Proteins we focus on</h2>#}
+{#        </div>#}
+{#    </section>#}
+{##}
+{#    <section class="ftco-section ftco-category ftco-no-pt">#}
+{#        <div class="container">#}
+{#            <div class="row">#}
+{#                <div class="col-md-8">#}
+{#                    <div class="row">#}
+{#                        <div class="col-md-6 order-md-last align-items-stretch d-flex">#}
+{#                            <div class="category-wrap-2 ftco-animate img align-items d-flex"#}
+{#                                style="background-image: url({% static 'images/peas.jpg' %});">#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="col-md-6">#}
+{#                            <div class="category-wrap ftco-animate img mb-4 d-flex align-items-end"#}
+{#                                style="background-image: url({% static 'images/wheat.jpg' %});">#}
+{#                            </div>#}
+{#                            <div class="category-wrap ftco-animate img d-flex align-items-end"#}
+{#                                style="background-image: url({% static 'images/oats.jpg' %});">#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{##}
+{#                <div class="col-md-4">#}
+{#                    <div class="category-wrap ftco-animate img mb-4 d-flex align-items-end"#}
+{#                        style="background-image: url({% static 'images/beans.jpg' %});">#}
+{#                    </div>#}
+{#                    <div class="category-wrap ftco-animate img d-flex align-items-end"#}
+{#                        style="background-image: url({% static 'images/lentils.jpg' %});">#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </section>#}
+{#     <section class="ftco-section testimony-section">#}
+{#      <div class="container">#}
+{#        <div class="row justify-content-center mb-5 pb-3">#}
+{#          <div class="col-md-7 heading-section ftco-animate text-center">#}
+{#          	<span class="subheading">Team Details</span>#}
+{#            <h2 class="mb-4">Prof. Dr Shafaq Khan</h2>#}
+{#            <p>Internship Project 1</p>#}
+{#          </div>#}
+{#        </div>#}
+{#        <div class="row ftco-animate">#}
+{#          <div class="col-md-12">#}
+{#            <div class="carousel-testimony owl-carousel">#}
+{#              <div class="item">#}
+{#                <div class="testimony-wrap p-4 pb-5">#}
+{#                  <div class="user-img mb-5" style="background-image: url({% static 'images/soma.jpg'%})">#}
+{#                    <span class="quote d-flex align-items-center justify-content-center">#}
+{#                      <i class="icon-quote-left"></i>#}
+{#                    </span>#}
+{#                  </div>#}
+{#                  <div class="text text-center">#}
+{#                    <p class="mb-5 pl-4 line">Graduate student with interests in machine learning and artificial intelligence, and with work experience in the fin tech industry. Passionate about leveraging data to drive innovation and enhance decision-making processes.</p>#}
+{#                    <p class="name">Somashekar Venkatamadegowda</p>#}
+{#                    <span class="position">Team Lead</span>#}
+{#                  </div>#}
+{#                </div>#}
+{#              </div>#}
+{#              <div class="item">#}
+{#                <div class="testimony-wrap p-4 pb-5">#}
+{#                  <div class="user-img mb-5" style="background-image: url({% static 'images/shiva.jpg'%})">#}
+{#                    <span class="quote d-flex align-items-center justify-content-center">#}
+{#                      <i class="icon-quote-left"></i>#}
+{#                    </span>#}
+{#                  </div>#}
+{#                  <div class="text text-center justify-content-center">#}
+{#                      <br>#}
+{#                    <p class="mb-5 pl-4 line">I’m a graduate student, interested in Quality assurance, AI and Cybersecurity, interested in ensuring the quality of the product remains intact and improvise using AI.’</p>#}
+{#                      <br>#}
+{##}
+{#                    <p class="name">Shivamani Arunachalam</p>#}
+{#                    <span class="position">ETL Analyst</span>#}
+{#                  </div>#}
+{#                </div>#}
+{#              </div>#}
+{#              <div class="item">#}
+{#                <div class="testimony-wrap p-4 pb-5">#}
+{#                  <div class="user-img mb-5" style="background-image: url({% static 'images/yash.jpg'%})">#}
+{#                    <span class="quote d-flex align-items-center justify-content-center">#}
+{#                      <i class="icon-quote-left"></i>#}
+{#                    </span>#}
+{#                  </div>#}
+{#                  <div class="text text-center">#}
+{#                    <p class="mb-5 pl-4 line">A graduate student at University of Windsor hailing from India and having working experience in .NET with high interest and adaptability in learning and applying new languages to real projects.</p>#}
+{#                    <br>#}
+{#                      <p class="name">Yash Mandaviya</p>#}
+{#                    <span class="position">Data Base Analyst</span>#}
+{#                  </div>#}
+{#                </div>#}
+{#              </div>#}
+{#              <div class="item">#}
+{#                <div class="testimony-wrap p-4 pb-5">#}
+{#                  <div class="user-img mb-5" style="background-image: url({% static 'images/abdullah.jpg'%})">#}
+{#                    <span class="quote d-flex align-items-center justify-content-center">#}
+{#                      <i class="icon-quote-left"></i>#}
+{#                    </span>#}
+{#                  </div>#}
+{#                  <div class="text text-center">#}
+{#                    <p class="mb-5 pl-4 line">Graduate Student at University of Windsor. Having experience of working with multiple technologies. I am eager to contribute my skills ensuring the business requirements are met.</p>#}
+{#                    <br>#}
+{#                      <p class="name">Abdullah Mohammed</p>#}
+{#                    <span class="position">Backend Developer</span>#}
+{#                  </div>#}
+{#                </div>#}
+{#              </div>#}
+{#              <div class="item">#}
+{#                <div class="testimony-wrap p-4 pb-5">#}
+{#                  <div class="user-img mb-5" style="background-image: url({% static 'images/hemanth.jpg'%})">#}
+{#                    <span class="quote d-flex align-items-center justify-content-center">#}
+{#                      <i class="icon-quote-left"></i>#}
+{#                    </span>#}
+{#                  </div>#}
+{#                  <div class="text text-center">#}
+{#                    <p class="mb-5 pl-4 line">A graduate student at University of Windsor specializing in applied computing. I have experience as a DevOps engineer. I'm interested in advanced tech which create meaningful solutions that improve people's lives.</p>#}
+{#                    <p class="name">Hemanth Sai uppalapati</p>#}
+{#                    <span class="position">Front end Developer</span>#}
+{#                  </div>#}
+{#                </div>#}
+{#              </div>#}
+{#            </div>#}
+{#          </div>#}
+{#        </div>#}
+{#      </div>#}
+{#    </section>#}
+{#    #}
+{#		<section class="ftco-section ftco-partner">#}
+{#            <div class="container d-flex align-items-center justify-content-center" style="height: 200px;">#}
+{#        <h2 class="category-wrap">Project Stakeholders</h2>#}
+{#    </div>#}
+{#    	<div class="container">#}
+{#    		<div class="row">#}
+{#    			<div class="col-sm ftco-animate">#}
+{#    				<a href="https://www.uwindsor.ca" class="partner"><img src="{% static 'images/Uwindsor_front.jpg'%}"  class="img-fluid alt="Colorlib Template"></a>#}
+{#    			</div>#}
+{#    			<div class="col-sm ftco-animate">#}
+{#    				<a href="https://profils-profiles.science.gc.ca/en/research-centre/guelph-research-and-development-centre" class="partner"><img src="{% static 'images/Guelph_research.jpeg'%}" class="img-fluid" alt="Colorlib Template"></a>#}
+{#    			</div>#}
+{#    		</div>#}
+{#    	</div>#}
+{#    </section>#}
+{#{% endblock %}#}
