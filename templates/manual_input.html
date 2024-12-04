@@ -20,17 +20,19 @@
             <div class="col-md-8">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
-{#                        <h4 class="card-title text-success">Protein Data Form</h4>#}
-{#                        <p class="card-text">Provide the required information and click <strong>Submit</strong>.</p>#}
+                        {% if errors and errors.general %}
+                        <div class="alert alert-danger">{{ errors.general }}</div>
+                        {% endif %}
                         <form method="post" novalidate>
                             {% csrf_token %}
 
                             <!-- Sample Name -->
                             <div class="mb-3">
                                 <label for="id_sample" class="form-label">Sample Name</label>
-                                <input type="text" name="sample" id="id_sample" class="form-control {% if errors.sample %}is-invalid{% endif %}"
+                                <input type="text" name="sample" id="id_sample"
+                                       class="form-control {% if errors and errors.sample %}is-invalid{% endif %}"
                                        placeholder="Enter sample name" required>
-                                {% if errors.sample %}
+                                {% if errors and errors.sample %}
                                 <div class="invalid-feedback">
                                     {{ errors.sample }}
                                 </div>
@@ -41,9 +43,9 @@
                             <div class="mb-3">
                                 <label for="id_protein_percent" class="form-label">Protein (%)</label>
                                 <input type="number" step="0.01" name="protein_percent" id="id_protein_percent"
-                                       class="form-control {% if errors.protein_percent %}is-invalid{% endif %}"
+                                       class="form-control {% if errors and errors.protein_percent %}is-invalid{% endif %}"
                                        placeholder="Enter protein percentage" required min="0" max="100">
-                                {% if errors.protein_percent %}
+                                {% if errors and errors.protein_percent %}
                                 <div class="invalid-feedback">
                                     {{ errors.protein_percent }}
                                 </div>
@@ -54,9 +56,9 @@
                             <div class="mb-3">
                                 <label for="id_pdcaas" class="form-label">PDCAAS (%)</label>
                                 <input type="number" step="0.01" name="pdcaas" id="id_pdcaas"
-                                       class="form-control {% if errors.pdcaas %}is-invalid{% endif %}"
+                                       class="form-control {% if errors and errors.pdcaas %}is-invalid{% endif %}"
                                        placeholder="Enter PDCAAS percentage" required min="0" max="100">
-                                {% if errors.pdcaas %}
+                                {% if errors and errors.pdcaas %}
                                 <div class="invalid-feedback">
                                     {{ errors.pdcaas }}
                                 </div>
@@ -67,9 +69,9 @@
                             <div class="mb-3">
                                 <label for="id_ivpdcaas" class="form-label">IVPDCAAS (%)</label>
                                 <input type="number" step="0.01" name="ivpdcaas" id="id_ivpdcaas"
-                                       class="form-control {% if errors.ivpdcaas %}is-invalid{% endif %}"
+                                       class="form-control {% if errors and errors.ivpdcaas %}is-invalid{% endif %}"
                                        placeholder="Enter IVPDCAAS percentage" required min="0" max="100">
-                                {% if errors.ivpdcaas %}
+                                {% if errors and errors.ivpdcaas %}
                                 <div class="invalid-feedback">
                                     {{ errors.ivpdcaas }}
                                 </div>

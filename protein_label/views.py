@@ -27,7 +27,7 @@ FLOURS_AND_CEREALS_RACC_VALUES = {
     'wheat': 15,
     'corn meal': 30,
     'rice': 45,
-    'barley': 45,
+    # 'barley': 45,
     ### --Flours--
     'buckwheat': 30,
     'potato': 30,
@@ -64,8 +64,6 @@ def home(request):
     return render(request, 'index.html')
 
 def label_source(value):
-    # if pd.isna(value):  # Check if the value is NaN
-    #     return 'Unknown'
     if value > 10:
         return 'Excellent Source'
     elif 5 <= value <= 10:
@@ -319,50 +317,63 @@ def chart_view(request):
     print("Chart Data:", chart_data)
     return render(request, 'chart.html', {'chart_data': chart_data})
 
+
 def manual_input(request):
     result = None
+    errors = None
     if request.method == 'POST':
         form = ManualInputForm(request.POST)
         if form.is_valid():
-            # Extract form data
-            sample = form.cleaned_data['sample'].lower().strip()
-            sample_name = form.cleaned_data['sample']
-            protein_percent = form.cleaned_data['protein_percent']
-            pdcaas = form.cleaned_data['pdcaas']
-            ivpdcaas = form.cleaned_data['ivpdcaas']
+            try:
+                # Extract form data
+                sample = form.cleaned_data['sample'].lower().strip()
+                sample_name = form.cleaned_data['sample']
+                protein_percent = form.cleaned_data['protein_percent']
+                pdcaas = form.cleaned_data['pdcaas']
+                ivpdcaas = form.cleaned_data['ivpdcaas']
 
-            # Determine the RACC value and category based on the sample keyword
-            product_info = extract_keyword_and_category(sample)
+                # Determine the RACC value and category based on the sample keyword
+                product_info = extract_keyword_and_category(sample)
 
-            if product_info:
-                racc_value = product_info['racc_value']
-                category = product_info['category']
-                keyword = product_info['keyword']
+                if product_info:
+                    racc_value = product_info['racc_value']
+                    category = product_info['category']
+                    keyword = product_info['keyword']
 
-                # Calculate claims and labels
-                pdcaas_result = (protein_percent / 100) * racc_value * (pdcaas / 100)
-                pdcaas_label = label_source(pdcaas_result)
+                    # Calculate claims and labels
+                    pdcaas_result = (protein_percent / 100) * racc_value * (pdcaas / 100)
+                    pdcaas_label = label_source(pdcaas_result)
 
-                ivpdcaas_result = (protein_percent / 100) * racc_value * (ivpdcaas / 100)
-                ivpdcaas_label = label_source(ivpdcaas_result)
+                    ivpdcaas_result = (protein_percent / 100) * racc_value * (ivpdcaas / 100)
+                    ivpdcaas_label = label_source(ivpdcaas_result)
 
-                # Prepare results
-                result = {
-                    'sample': sample,
-                    'sample_name': sample_name,
-                    'category': category,
-                    'keyword': keyword,
-                    'racc_value': racc_value,
-                    'pdcaas_result': round(pdcaas_result, 2),
-                    'pdcaas_label': pdcaas_label,
-                    'ivpdcaas_result': round(ivpdcaas_result, 2),
-                    'ivpdcaas_label': ivpdcaas_label,
-                }
-            else:
-                result = {
-                    'error': f"No RACC value found for the sample '{sample}'. Please ensure it matches a known product."
-                }
+                    # Prepare results
+                    result = {
+                        'sample': sample,
+                        'sample_name': sample_name,
+                        'category': category,
+                        'keyword': keyword,
+                        'racc_value': racc_value,
+                        'pdcaas_result': round(pdcaas_result, 2),
+                        'pdcaas_label': pdcaas_label,
+                        'ivpdcaas_result': round(ivpdcaas_result, 2),
+                        'ivpdcaas_label': ivpdcaas_label,
+                    }
+                else:
+                    result = {
+                        'error': f"No RACC value found for the sample '{sample}'. Please ensure it matches a known product."
+                    }
+            except Exception as e:
+                errors = {'general': str(e)}
+        else:
+            errors = form.errors
     else:
         form = ManualInputForm()
 
-    return render(request, 'manual_input.html', {'form': form, 'result': result})
+    return render(request, 'manual_input.html', {'form': form, 'result': result, 'errors': errors})
+
+
+
+
+
+
