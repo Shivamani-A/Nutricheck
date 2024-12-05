@@ -14,50 +14,11 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, PageBreak
 from reportlab.pdfbase import pdfmetrics
 
 from .forms import ExcelUploadForm, ManualInputForm
-from .models import ProteinData
+from .models import ProteinData,RACCValue
 
 
 # Create your views here.
 
-# Define the RACC values as a dictionary
-FLOURS_AND_CEREALS_RACC_VALUES = {
-    ### --Cereals/Grains--
-    'hemp': 15,
-    'oats': 40,
-    'wheat': 15,
-    'corn meal': 30,
-    'rice': 45,
-    # 'barley': 45,
-    ### --Flours--
-    'buckwheat': 30,
-    'potato': 30,
-    'corn ': 30,
-    'sorghum': 30,
-    'rye': 30,
-    'almond': 15,
-    'soya': 15,
-    'coconut': 15,
-    'peanut': 15,
-    'chia seeds':15,
-    'tapioca': 15,
-    'flax': 15,
-    'bran': 15,
-    'barley': 30,
-}
-
-LEGUMES_RACC_VALUES = {
-    'lentil': 35,
-    'tofu': 85,
-    'bean': 35,
-    'pea': 35,
-    'soy': 35,
-    'chickpea': 35,
-}
-
-RACC_CATEGORIES = {
-    'FLOURS_AND_CEREALS': FLOURS_AND_CEREALS_RACC_VALUES,
-    'LEGUMES': LEGUMES_RACC_VALUES,
-}
 
 def home(request):
     print("Home view called.")
@@ -71,18 +32,21 @@ def label_source(value):
     else:
         return 'No Claim'
 
+
 def extract_keyword_and_category(product_name):
     product_name = product_name.lower()  # Convert to lowercase for matching
-    for category, racc_values in RACC_CATEGORIES.items():
-        for keyword in racc_values:
-            # Use regular expressions to find the keyword in the product name
-            if re.search(r'\b' + re.escape(keyword) + r'\b', product_name):
-                return {
-                    'keyword': keyword,  # The matched keyword
-                    'category': category,  # The category it belongs to
-                    'racc_value': racc_values[keyword]  # The RACC value
-                }
+    racc_entries = RACCValue.objects.all()
+
+    for entry in racc_entries:
+        keyword = entry.keyword
+        if re.search(r'\b' + re.escape(keyword) + r'\b', product_name):
+            return {
+                'keyword': keyword,
+                'category': entry.category,
+                'racc_value': entry.racc_value,
+            }
     return None  # Return None if no keyword matches
+
 
 def process_excel(request):
     print("Processing Excel file...")
