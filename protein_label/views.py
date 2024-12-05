@@ -25,9 +25,9 @@ def home(request):
     return render(request, 'index.html')
 
 def label_source(value):
-    if value > 10:
+    if value >= 10:
         return 'Excellent Source'
-    elif 5 <= value <= 10:
+    elif 5 <= value < 10:
         return 'Good Source'
     else:
         return 'No Claim'
